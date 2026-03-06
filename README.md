@@ -27,13 +27,7 @@ The ML model (Gradient Boosting, AUC 0.816) found that `n_unique_activities` is 
 
 ![Executive Summary](results/figures/dashboard_page1_executive_summary.png)
 
-![Bottleneck Analysis](results/figures/dashboard_page2_bottleneck.png)
-
 ![SLA Performance](results/figures/dashboard_page3_sla.png)
-
-![Root Cause Analysis](results/figures/dashboard_page4_root_cause.png)
-
-![Process Conformance](results/figures/dashboard_page5_conformance.png)
 
 ---
 
@@ -105,9 +99,15 @@ Loaded the XES event log via pm4py, cleaned it, and built case-level features fr
 
 *Bottleneck:* Calculated inter-activity waiting time for every single transition in every case. Aggregated by activity to find mean wait, total cumulative delay, and a composite impact score (frequency × average wait). `W_Call after offers` wins by a large margin.
 
+![Bottleneck Analysis](results/figures/dashboard_page2_bottleneck.png)
+
 *Machine learning:* Compared Random Forest, Gradient Boosting, and Logistic Regression using 5-fold stratified cross-validation. Gradient Boosting came out on top at AUC 0.816. Process complexity features dominate — `n_unique_activities`, `n_events`, `n_resources`. The bank could flag high-risk cases at intake just by counting expected activity types before the case even starts.
 
+![Root Cause Analysis](results/figures/dashboard_page4_root_cause.png)
+
 *Conformance:* Defined what a correct process looks like — right start activity, right end activity, no rework markers — and checked every case against it. 0% pass.
+
+![Process Conformance](results/figures/dashboard_page5_conformance.png)
 
 ---
 
