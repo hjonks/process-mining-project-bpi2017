@@ -1,0 +1,62 @@
+
+
+BPI 2017 PROCESS MINING — SUMMARY REPORT
+Generated : 2026-03-05 19:49
+Data type : REAL BPI 2017 (1.2M events)
+
+
+DATASET
+  Total events          : 1,202,267
+  Total cases           : 31,509
+  Unique activities     : 26
+  Date range            : 2016-01-01 to 2017-02-01
+
+PROCESS COMPLEXITY
+  Unique process variants : 15,930
+  Top 3 variants cover    : 8.9% of all cases
+  Remaining 91.1% of cases follow long-tail variants
+
+CASE DURATION
+  Average   : 21.9 days
+  Median    : 19.1 days
+  Min       : 0.0 days
+  Max       : 286.1 days
+
+SLA PERFORMANCE  (threshold: 14 days)
+  Breach count : 20,183 cases (64.1%)
+  Met SLA      : 35.9% of cases
+
+OUTCOME SPLIT
+outcome
+Still Processing    27043
+Cancelled            4436
+Offer Sent             24
+Unknown                 5
+Denied                  1
+
+TOP 5 ACTIVITIES
+concept:name
+W_Validate application     209496
+W_Call after offers        191092
+W_Call incomplete files    168529
+W_Complete application     148900
+W_Handle leads              47264
+
+=============================================================================
+CV BULLET POINTS  (update numbers once running on real data)
+=============================================================================
+
+  Analysed 1,202,267+ event logs from a Dutch bank loan application process,
+  discovering 15,930 unique process variants — top 3 paths covering
+  9% of 31,509 cases, with the remaining 91% reflecting
+  complex, deviation-prone application journeys.
+
+  Identified an SLA breach rate of 64.1% (cases exceeding the 14-day
+  processing threshold), with median case duration of 19.1 days —
+  translating raw event log data into measurable operational KPIs.
+
+  Engineered a case-level feature table from 1.2M+ timestamped events,
+  including duration, activity counts, resource utilisation, and rework
+  indicators — forming the analytical foundation for downstream ML modelling.
+
+=============================================================================

@@ -1,0 +1,45 @@
+
+
+BPI 2017 PROCESS MINING — BOTTLENECK SUMMARY REPORT
+Generated : 2026-03-05 20:03
+
+BOTTLENECK ANALYSIS
+  Top bottleneck activity : W_Call after offers
+  Mean waiting time       : 30.1 hours per occurrence
+  Total cumulative delay  : 239868 days
+
+REWORK ANALYSIS
+  Cases with rework loops : 100.0%
+  Total rework events     : 712859
+
+CONFORMANCE CHECKING
+  Conformance rate        : 0.0%
+  Non-conformance rate    : 100.0%
+
+ML MODEL PERFORMANCE  (Best: Gradient Boosting)
+  Cross-validated AUC     : 0.8271
+  Test AUC                : 0.8163
+  Test Accuracy           : 75.2%
+  Top predictive feature  : n_unique_activities  (importance: 0.416)
+
+=============================================================================
+CV BULLET POINTS
+=============================================================================
+
+  Identified 'W_Call after offers' as the primary process bottleneck with
+  30.1-hour mean waiting time across 191,091
+  occurrences — quantifying 239868 cumulative days of process delay.
+
+  Detected rework loops in 100.0% of loan application cases,
+  quantifying process inefficiency and providing prioritised targets for
+  operational improvement initiatives.
+
+  Built a Gradient Boosting classifier (AUC: 0.816) to predict SLA
+  breaches using intake-observable features, identifying 'n_unique_activities' as
+  the strongest predictor — enabling proactive high-risk case escalation.
+
+  Conformance checking revealed 100.0% of cases deviate from the
+  normative process model, with rework and incorrect activity sequencing
+  as primary deviation types — directly informing process redesign priorities.
+
+=============================================================================
