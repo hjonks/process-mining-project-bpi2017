@@ -1,16 +1,7 @@
-"""
-
-EDA & PROCESS DISCOVERY
-BPI 2017: Dutch Bank Loan Application Process
-
-HOW TO RUN:
-  cd E:\Projects\Process_Mining_Project\scripts
-  python day1_eda_discovery.py
-
-"""
-
 import os
+
 import warnings
+
 import random
 from datetime import datetime, timedelta
 from pathlib import Path
@@ -46,13 +37,6 @@ XES_PATH = PATHS['raw'] / 'BPI Challenge 2017.xes'
 # STEP 1 — DATA LOADING
 
 def generate_synthetic_bpi2017(n_cases: int = 5000, seed: int = 42) -> pd.DataFrame:
-    """
-    Generates a realistic synthetic event log mirroring BPI 2017 structure.
-    Used automatically when the real XES file has not been downloaded yet.
-    Same columns, same process logic, swap in real data by placing the
-    XES file at data/raw/BPI Challenge 2017.xes.
-    """
-    print("  Generating synthetic BPI 2017-style data...")
     random.seed(seed)
     np.random.seed(seed)
 
@@ -160,8 +144,6 @@ def load_data() -> tuple[pd.DataFrame, bool]:
 
 
 def clean_and_validate(df: pd.DataFrame) -> pd.DataFrame:
-    print("STEP 2: CLEANING & VALIDATION")
-    print("-" * 50)
 
     original_len = len(df)
 
@@ -207,10 +189,6 @@ def clean_and_validate(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def engineer_case_features(df: pd.DataFrame) -> pd.DataFrame:
-    
-    print("STEP 3: CASE-LEVEL FEATURE ENGINEERING")
-    print("-" * 50)
-
     SLA_DAYS = 14
 
     # Duration
@@ -321,9 +299,6 @@ def discover_process(df: pd.DataFrame,
                      case_df: pd.DataFrame) -> tuple[pd.DataFrame,
                                                       pd.Series, pd.Series]:
     
-    print("STEP 4: PROCESS DISCOVERY")
-    print("-" * 50)
-
     case_variants   = (df.groupby('case:concept:name')['concept:name']
                          .apply(lambda x: ' → '.join(x))
                          .rename('variant'))
@@ -365,10 +340,7 @@ def discover_process(df: pd.DataFrame,
 def build_eda_overview_chart(df: pd.DataFrame,
                               case_df: pd.DataFrame,
                               activity_freq: pd.Series) -> Path:
-    """
-    8-panel summary chart covering duration, outcomes, SLA, activities.
-    Saved to: results/figures/eda_overview.png
-    """
+    
     plt.style.use('seaborn-v0_8-whitegrid')
     fig = plt.figure(figsize=(20, 16))
     fig.patch.set_facecolor('#FAFAFA')
@@ -511,17 +483,12 @@ def build_eda_overview_chart(df: pd.DataFrame,
     out = PATHS['figures'] / 'eda_overview.png'
     plt.savefig(out, dpi=150, bbox_inches='tight', facecolor='#FAFAFA')
     plt.close()
-    print(f"  Saved → results/figures/eda_overview.png")
     return out
 
 
 def build_variant_chart(variant_counts: pd.Series,
                          case_df: pd.DataFrame) -> Path:
-    """
-    Dedicated variant analysis chart — Pareto curve + SLA breach
-    by variant rank.
-    Saved to: results/figures/process_variants.png
-    """
+
     plt.style.use('seaborn-v0_8-whitegrid')
     fig, axes = plt.subplots(1, 2, figsize=(16, 6))
     fig.patch.set_facecolor('#FAFAFA')
@@ -593,29 +560,21 @@ def build_variant_chart(variant_counts: pd.Series,
     return out
 
 
-
 # STEP 5 — SAVE OUTPUTS
 
 
 def save_processed_data(df: pd.DataFrame,
                          case_df: pd.DataFrame) -> None:
-    """Saves cleaned data to data/processed/ for use in Day 2."""
     event_path = PATHS['processed'] / 'event_log_cleaned.csv'
     case_path  = PATHS['processed'] / 'case_features.csv'
 
     df.to_csv(event_path, index=False)
     case_df.to_csv(case_path)
-
-    print(f"  Saved → data/processed/event_log_cleaned.csv  ({len(df):,} rows)")
-    print(f"  Saved → data/processed/case_features.csv      ({len(case_df):,} rows)")
-
-
 def save_summary_report(df: pd.DataFrame,
                          case_df: pd.DataFrame,
                          variant_counts: pd.Series,
                          activity_freq: pd.Series,
                          is_real: bool) -> None:
-    """Saves key statistics and pre-written CV bullets to results/reports/."""
     sla_pct    = case_df['sla_breach'].mean() * 100
     med_days   = case_df['duration_days'].median()
     avg_days   = case_df['duration_days'].mean()
@@ -663,7 +622,6 @@ TOP 5 ACTIVITIES
     out = PATHS['reports'] / 'process_mining_summary.txt'
     with open(out, 'w', encoding='utf-8') as f:
         f.write(report)
-    print(f"  Saved → results/reports/process_mining_summary.txt")
     print(report)
 
 
@@ -671,46 +629,8 @@ TOP 5 ACTIVITIES
 
 
 if __name__ == '__main__':
-    print()
-    print("=" * 60)
-    print("  PROCESS MINING PROJECT | EXPLORATORY DATA ANALYSIS & PROCESS DISCOVERY | BPI 2017")
-    print("=" * 60)
-    print(f"\n  Project root : {ROOT}")
-    print()
 
     df, is_real   = load_data()
     df            = clean_and_validate(df)
     case_df       = engineer_case_features(df)
     case_df, variant_counts, activity_freq = discover_process(df, case_df)
-
-    print("STEP 5: BUILDING VISUALISATIONS")
-    print("-" * 50)
-    build_eda_overview_chart(df, case_df, activity_freq)
-    build_variant_chart(variant_counts, case_df)
-    print()
-
-    print("STEP 6: SAVING PROCESSED DATA")
-    print("-" * 50)
-    save_processed_data(df, case_df)
-    print()
-
-    print("STEP 7: SAVING SUMMARY REPORT")
-    print("-" * 50)
-    save_summary_report(df, case_df, variant_counts, activity_freq, is_real)
-
-    print(f"""
-  Outputs written to:
-
-    data/
-      processed/
-        event_log_cleaned.csv     
-        case_features.csv         
-
-    results/
-      figures/
-        eda_overview.png     
-        process_variants.png 
-      reports/
-        process_mining_summary.txt          
-
-""")

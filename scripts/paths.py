@@ -1,19 +1,8 @@
-"""
-
-PATHS.PY — Central path configuration for the Process Mining Project
-
-Usage:
-    from paths import PATHS
-    df.to_csv(PATHS['processed'] / 'event_log_cleaned.csv')
-
-"""
-
 from pathlib import Path
 
 # ── Project root — everything is relative to this ──────────────────────────
 # This file lives in scripts/, so root is one level up.
-ROOT = Path("Process_Mining_Project").resolve().parent.parent
-
+ROOT = Path(__file__).resolve().parent.parent
 # ── Folder definitions ──────────────────────────────────────────────────────
 PATHS = {
     # Raw source data (XES file goes here)

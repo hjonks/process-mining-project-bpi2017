@@ -1,17 +1,6 @@
-"""
-BOTTLENECK ANALYSIS, ROOT CAUSE ML & CONFORMANCE CHECKING
-BPI 2017: Dutch Bank Loan Application Process
-
-HOW TO RUN:
-  cd E:\Projects\Process_Mining_Project\scripts
-  python bottleneck_ml.py
-  
-"""
-
 import warnings
 from datetime import datetime
 from pathlib import Path
-
 import numpy as np
 import pandas as pd
 import matplotlib
@@ -19,7 +8,6 @@ matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
 import seaborn as sns
-
 from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import (ConfusionMatrixDisplay, confusion_matrix,
@@ -48,11 +36,6 @@ COLORS = {
 # LOAD DATA
 
 def load_data() -> tuple[pd.DataFrame, pd.DataFrame]:
-    print()
-    print("=" * 60)
-    print("  PROCESS MINING PROJECT — BOTTLENECK ANALYSIS & ROOT CAUSE ML")
-    print("  Bottleneck · ML · Conformance  |  BPI 2017")
-    print("=" * 60)
     print(f"\n  Project root : {ROOT}\n")
 
     event_path = PATHS['processed'] / 'event_log_cleaned.csv'
@@ -81,16 +64,6 @@ def load_data() -> tuple[pd.DataFrame, pd.DataFrame]:
 def bottleneck_analysis(df: pd.DataFrame) -> tuple[pd.DataFrame,
                                                     pd.DataFrame,
                                                     pd.DataFrame]:
-    """
-    Calculates inter-activity waiting time for every transition in every case.
-
-    DEFINITIONS:
-      waiting_hours  = time elapsed from the END of the previous activity
-                       to the START of this activity (queue time)
-      bottleneck     = activity with the highest mean_wait × frequency product
-
-    """
-    print("STEP 1: BOTTLENECK ANALYSIS")
 
     df = df.sort_values(['case:concept:name', 'time:timestamp']).copy()
     df['prev_timestamp'] = df.groupby('case:concept:name')['time:timestamp'].shift(1)
@@ -142,7 +115,6 @@ def bottleneck_analysis(df: pd.DataFrame) -> tuple[pd.DataFrame,
 
     out = PATHS['tables'] / 'bottleneck_summary.csv'
     bottleneck.to_csv(out, index=False)
-    print(f"\n  Saved → results/tables/bottleneck_summary.csv\n")
     return bottleneck, transitions, transition_waits
 
 
@@ -151,13 +123,6 @@ def bottleneck_analysis(df: pd.DataFrame) -> tuple[pd.DataFrame,
 def rework_analysis(df: pd.DataFrame,
                     case_df: pd.DataFrame) -> tuple[pd.DataFrame,
                                                      pd.DataFrame]:
-    """
-    Rework = a case visits the same activity more than once.
-    This is pure operational waste, every repeat is a case that couldn't
-    move forward and had to be re-processed.
-    """
-    print("STEP 2: REWORK DETECTION")
-    print("-" * 50)
 
     act_counts = (df
         .groupby(['case:concept:name', 'concept:name'])
@@ -205,25 +170,6 @@ def rework_analysis(df: pd.DataFrame,
 # STEP 3 — ROOT CAUSE ML MODEL
 
 def build_ml_model(case_df: pd.DataFrame) -> tuple:
-    """
-    Trains 3 classifiers to predict SLA breach and compares them.
-
-    FEATURES (all observable at or near case intake):
-      n_events               — how many activities the case has gone through
-      n_unique_activities    — how many different activity types
-      n_resources            — how many staff members touched it
-      has_rework             — any rework loops detected
-      rework_events          — number of redundant events
-      start_month            — month of submission
-      log_requested_amount   — log-transformed loan amount
-      outcome_encoded        — approved / denied / cancelled (label encoded)
-      dow_encoded            — day of week as integer
-      app_type_encoded       — new credit vs limit raise
-
-    TARGET: sla_breach (1 = exceeded 14-day SLA, 0 = met SLA)
-    """
-    print("STEP 3: ROOT CAUSE ML MODEL")
-
     feature_cols = []
     df_m = case_df.copy()
 
@@ -336,19 +282,7 @@ def build_ml_model(case_df: pd.DataFrame) -> tuple:
 
 def conformance_checking(df: pd.DataFrame,
                           case_df: pd.DataFrame) -> tuple[pd.DataFrame, float]:
-    """
-    Checks how many cases follow the normative (ideal) process model.
-
-    NORMATIVE RULES:
-      1. Case starts with A_Create Application
-      2. Case ends with a recognised terminal activity
-      3. No rework marker activities present
-      4. Application activities broadly precede Offer activities
-
-    RESULT: conformance_rate = % of cases satisfying all 4 rules
-    """
-    print("STEP 4: CONFORMANCE CHECKING")
-
+    
     IDEAL_END      = ['A_Complete', 'A_Denied', 'A_Cancelled']
     REWORK_MARKERS = ['A_Pending', 'O_Returned', 'O_Cancelled']
 
@@ -379,8 +313,7 @@ def conformance_checking(df: pd.DataFrame,
             'correct_order':    int(order_ok),
             'deviation_types':  ','.join(devs) if devs else 'none',
         })
-
-    print("  Checking conformance for all cases...")
+    
     conformance      = df.groupby('case:concept:name').apply(check)
     conformance_rate = conformance['is_conformant'].mean() * 100
 
@@ -416,11 +349,7 @@ def build_bottleneck_charts(bottleneck: pd.DataFrame,
                              conformance: pd.DataFrame,
                              conformance_rate: float,
                              case_df: pd.DataFrame) -> Path:
-    """
-    6-panel chart: bottleneck rankings, impact matrix, rework,
-    conformance, waiting time distributions.
-    Saved to: results/figures/bottleneck_analysis.png
-    """
+
     plt.style.use('seaborn-v0_8-whitegrid')
     fig = plt.figure(figsize=(20, 14))
     fig.patch.set_facecolor('#FAFAFA')
@@ -507,7 +436,6 @@ def build_bottleneck_charts(bottleneck: pd.DataFrame,
     out = PATHS['figures'] / 'bottleneck_analysis.png'
     plt.savefig(out, dpi=150, bbox_inches='tight', facecolor='#FAFAFA')
     plt.close()
-    print(f"  Saved → results/figures/bottleneck_analysis.png")
     return out
 
 
@@ -515,10 +443,7 @@ def build_ml_charts(results: dict, best_model: str,
                     feat_imp: pd.DataFrame,
                     X_test: pd.DataFrame,
                     y_test: pd.Series) -> Path:
-    """
-    4-panel ML chart: feature importance, ROC curves, confusion matrix.
-    Saved to: results/figures/ml_performance.png
-    """
+
     plt.style.use('seaborn-v0_8-whitegrid')
     fig = plt.figure(figsize=(20, 10))
     fig.patch.set_facecolor('#FAFAFA')
@@ -570,7 +495,6 @@ def build_ml_charts(results: dict, best_model: str,
     out = PATHS['figures'] / 'ml_performance.png'
     plt.savefig(out, dpi=150, bbox_inches='tight', facecolor='#FAFAFA')
     plt.close()
-    print(f"  Saved → results/figures/ml_performance.png")
     return out
 
 
@@ -582,11 +506,6 @@ def save_outputs(case_df: pd.DataFrame,
                  feat_imp: pd.DataFrame,
                  bottleneck: pd.DataFrame,
                  conformance_rate: float) -> None:
-    """
-    Saves the enriched case table and the summary report.
-    """
-    print("STEP 6: SAVING OUTPUTS")
-    print("-" * 50)
 
     # Enriched case table for Power BI
     out_case = PATHS['tables'] / 'case_features_enriched.csv'
@@ -639,7 +558,6 @@ ML MODEL PERFORMANCE  (Best: {best_model})
     out_report = PATHS['reports'] / 'bottleneck_summary.txt'
     with open(out_report, 'w', encoding='utf-8') as f:
         f.write(report)
-    print(f"  Saved → results/reports/bottleneck_summary.txt")
     print(report)
 
 
@@ -663,18 +581,3 @@ if __name__ == '__main__':
     save_outputs(case_df, results, best_model, feat_imp,
                  bottleneck, conformance_rate)
 
-    print(f"""
-  Outputs written to:
-
-    results/
-      figures/
-        day2_bottleneck_analysis.png  
-        day2_ml_performance.png      
-      tables/
-        bottleneck_summary.csv     
-        case_features_enriched.csv   
-        feature_importance.csv       
-      reports/
-        bottleneck_summary.txt              
-
-""")
