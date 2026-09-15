@@ -1,27 +1,21 @@
 # Process Mining: Dutch Bank Loan Applications
-**BPI Challenge 2017 · Python · Power BI · scikit-learn**
 
----
+**BPI Challenge 2017 · Python · SQL (DuckDB) · Power BI · scikit-learn**
 
-I came across the BPI 2017 dataset during my MSc and got genuinely curious about what was actually going wrong inside a bank's loan process. Not the high-level "efficiency improvements" type of answer — the specific, measurable, *this exact activity is where cases go to die* type of answer. That's what this project is.
+Where does a bank's loan process actually lose time, and can a late application be spotted on day one? This project answers both questions with 1,202,267 real system events from 31,509 loan applications. The analysis was built in Python and pm4py, then rebuilt independently in SQL to check every headline number.
 
----
+## In 30 seconds
 
-## What I found
+| Question | Answer | Evidence |
+|---|---|---|
+| How often is the 14 day SLA missed? | **64.1%** of applications (20,183 of 31,509) | Python and `sql/queries/03`, RM02 |
+| Where does the time go? | **239,868 cumulative days** of waiting before one activity, `W_Call after offers` (191,091 occurrences) | RM04 |
+| Is that a staff backlog? | Mostly not. **86.7%** of that delay is call-back tasks suspended between calls to the customer | RM11 |
+| How fast does the bank decide? | Median **0.9 days** from application to first offer, then a median **13.8 days** waiting for the customer to accept | PA02, PA09 |
+| Who breaches most? | Cancelled applications (86.0% breach) versus paid out loans (53.7%) | RM10 |
+| Can breaches be predicted at intake? | Yes. Gradient boosting reached **AUC 0.816** on held-out cases | `scripts/bottleneck_ml.py` |
 
-The headline number is 0%. As in, zero cases out of 31,509 follow the process the way it was designed. Every single application deviates from the normative model. That was surprising even after running the conformance check twice.
-
-The bottleneck is `W_Call after offers`. 191,091 times this activity ran across the dataset, with a mean queue time of 33.2 hours each occurrence. Stack that up and you get **239,868 cumulative days of process delay** from one activity. That's one number I kept coming back to.
-
-A few other things that stood out:
-
-**712,859 rework events** across the dataset. Every case has at least one activity repeated — not a few edge cases, literally all of them.
-
-The ML model (Gradient Boosting, AUC 0.816) found that `n_unique_activities` is far and away the strongest SLA breach predictor, importance score 0.416. More unique activities in a case means longer duration, means almost certain to miss the 14-day deadline.
-
-**64.1% of completed cases breach the SLA.** The "Still Processing" cases in the raw data are excluded — they're right-censored, meaning the bank snapshot was taken before those cases resolved, so including them would inflate breach rates artificially.
-
----
+**So what.** The SLA problem is mainly the wait for customers to return signed offers, not slow decisions. The cheapest levers are faster customer follow-up (reminders, e-signature, a clear return deadline) and early escalation of the applications the model flags as high risk.
 
 ## Dashboard
 
@@ -35,55 +29,44 @@ The ML model (Gradient Boosting, AUC 0.816) found that `n_unique_activities` is 
 
 ![Process Conformance](results/figures/dashboard_page5_conformance.png)
 
----
+## What the SQL rebuild checked
 
-## The dataset
+Rebuilding the analysis in SQL reproduced every headline figure exactly, and it also caught two measurement effects worth stating plainly.
 
-Real event log from a Dutch bank's loan application process, released as part of the BPI Challenge 2017. 1,202,267 events across 31,509 cases covering a full year of operations.
+1. **Lifecycle logging inflates rework.** Counting every repeated event gives 712,859 "rework" events in 100% of cases. But work items are logged at schedule, start, suspend, resume and complete, so one task can appear five times. Counting completed tasks only gives **69,668 genuine repeats in 51.5% of applications**.
+2. **The 64.1% covers all applications.** It includes cancellations that close automatically after about 30 days, which is why cancelled applications breach far more often than paid out ones.
+3. **Conformance.** The 0% conformance result used simple start, end and rework rules. Because of the lifecycle logging above, treat it as a signal that the log needs a proper process model before conformance can be scored, not as proof that every case failed.
 
-Download: https://data.4tu.nl/articles/dataset/BPI_Challenge_2017/12696884  
-Place the `.xes` file in `data/raw/` before running anything.
+See [`sql/README.md`](sql/README.md) to run it. It takes about a minute on a laptop.
 
----
+## Methods
+
+**Process discovery and data quality (Python, pm4py, SQL).** Loaded the XES log, removed exact duplicates, profiled completeness, duplicates, timestamp order, boundary effects and actor types (`sql/queries/01_data_quality_profile.sql`), then built case level features: duration, SLA flag, final state, variants and rework.
+
+**Bottleneck analysis.** Measured the wait before every event, ranked activities by mean wait times frequency, and tested the result both ways: attributing the wait to the activity the case is sitting at, and to the activity it is waiting for (PA03, PA04).
+
+**Predicting breaches.** Compared random forest, gradient boosting and logistic regression with 5 fold stratified cross validation. Gradient boosting scored AUC 0.816 on the test set. The strongest predictor was the number of distinct activities in a case (importance 0.416).
+
+**Reporting.** A five page Power BI dashboard covering executive KPIs, bottlenecks, SLA performance, root cause and conformance.
 
 ## Project structure
 
 ```
 Process_Mining_Project/
-│
-├── data/
-│   ├── raw/                          ← put the XES file here
-│   └── processed/                    ← cleaned by eda_discovery.py
-│
-├── results/
-│   ├── figures/                      ← portfolio charts + dashboard screenshots
-│   ├── tables/                       ← CSVs for Power BI
-│   └── reports/                      ← summary stats
-│
-├── scripts/
-│   ├── paths.py                      ← path config, edit ROOT here
-│   ├── eda_discovery.py
-│   └── bottleneck_ml.py
-│
-└── powerbi/
-    └── Process_Mining_Dashboard.pbix
+├── data/               raw XES log goes in data/raw/ (not tracked)
+├── scripts/            Python pipeline: eda_discovery.py, bottleneck_ml.py, paths.py
+├── sql/                SQL rebuild: queries, runner, CSV outputs, README
+├── results/            figures, tables and summary reports
+└── powerbi/            Power BI dashboard (not tracked)
 ```
 
----
-
-## Running it
+## Running the Python pipeline
 
 ```bash
 pip install pm4py pandas numpy matplotlib seaborn scikit-learn scipy openpyxl
 ```
 
-Open `scripts/paths.py` and set line 17 to your actual project path:
-
-```python
-ROOT = Path(your_path_here).resolve()
-```
-
-Then:
+Set `ROOT` in `scripts/paths.py` to your project path, put the XES file in `data/raw/`, then:
 
 ```bash
 cd scripts
@@ -91,59 +74,19 @@ python eda_discovery.py
 python bottleneck_ml.py
 ```
 
-`eda_discovery.py` takes a few minutes on the real XES file. `bottleneck_ml.py` a bit longer because of the ML cross-validation. Close any CSV files open in Excel before running `bottleneck_ml.py` — Windows locks open files and Python cannot overwrite them.
-
----
-
-## The analysis
-
-**EDA and process discovery**
-
-Loaded the XES event log via pm4py, cleaned it, and built case-level features from scratch. Duration, SLA breach flag (14-day threshold), outcome classification, rework detection. Also ran process variant analysis to see how many different activity sequences exist across 31,509 cases.
-
-**Bottleneck analysis, ML, and conformance**
-
-*Bottleneck:* Calculated inter-activity waiting time for every single transition in every case. Aggregated by activity to find mean wait, total cumulative delay, and a composite impact score (frequency × average wait). `W_Call after offers` wins by a large margin.
-
-*Machine learning:* Compared Random Forest, Gradient Boosting, and Logistic Regression using 5-fold stratified cross-validation. Gradient Boosting came out on top at AUC 0.816. Process complexity features dominate — `n_unique_activities`, `n_events`, `n_resources`. The bank could flag high-risk cases at intake just by counting expected activity types before the case even starts.
-
-*Conformance:* Defined what a correct process looks like — right start activity, right end activity, no rework markers — and checked every case against it. 0% pass.
-
----
-
-## Pages in the dashboard
-
-| Page | What it shows |
-|------|--------------|
-| Executive Summary | Headline KPIs, outcome distribution, monthly trend |
-| Bottleneck Analysis | Waiting time by activity, impact score, cumulative delay |
-| SLA Performance | Duration distribution, breach rate by month, outcome vs SLA |
-| Root Cause Analysis | Feature importance, complexity vs duration scatter |
-| Process Conformance | Conformance rate, deviation breakdown, insight summary |
-
-All SLA and outcome metrics exclude "Still Processing" cases to avoid right-censorship bias.
-
----
+Close any CSVs open in Excel first, because Windows locks open files.
 
 ## Stack
 
-Python 3.10+ · pm4py · pandas · scikit-learn · matplotlib · seaborn · Power BI Desktop
+Python 3.10+ · pm4py · pandas · scikit-learn · DuckDB SQL · Power BI Desktop
 
----
+## Dataset
 
-## If you're reading this for hiring purposes
-
-The numbers are real — pulled from a publicly available dataset, not generated or inflated. Happy to walk through any part of the methodology.
-
----
-
-## Dataset credit
-
-van Dongen, B. (2017). *BPI Challenge 2017*. 4TU.ResearchData.  
+van Dongen, B. (2017). *BPI Challenge 2017*. 4TU.ResearchData.
 https://doi.org/10.4121/uuid:5f3067df-f10b-45da-b98b-86ae4c7a310b
 
 ---
 
-**Dhruv Chaudhary** · MSc Business Analytics & Decision Science, University of Leeds  
-dhruvdc007@gmail.com · UK Graduate Visa · No sponsorship required until September 2028  
-[LinkedIn](https://www.linkedin.com/in/dhruvdc007) · [GitHub](https://github.com/hjonks)
+**Dhruv Chaudhary** · MSc Business Analytics and Decision Sciences, University of Leeds
+Open to operations, MI and risk analyst roles in the UK · Eligible for the UK Graduate visa, no sponsorship needed
+[LinkedIn](https://www.linkedin.com/in/dhruvdc007) · [GitHub](https://github.com/hjonks) · dhruvdc007@gmail.com
