@@ -1,0 +1,5 @@
+end_state,cases,breach_rate_pct,median_days
+A_Pending,17228,53.7,14.8
+A_Cancelled,10431,86.0,31.6
+A_Denied,3752,50.5,14.1
+No end state in window,98,69.4,27.0

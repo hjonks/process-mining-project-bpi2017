@@ -1,0 +1,11 @@
+activity,cases_with_repeat,extra_events
+W_Validate application,21870,187626
+W_Call after offers,31362,159730
+W_Call incomplete files,15003,153526
+W_Complete application,31509,117391
+W_Handle leads,20423,26841
+A_Validating,11669,16946
+O_Created,8559,11486
+O_Create Offer,8559,11486
+O_Sent (mail and online),6834,8657
+A_Incomplete,5686,8052

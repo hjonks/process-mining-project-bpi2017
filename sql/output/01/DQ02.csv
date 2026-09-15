@@ -1,0 +1,11 @@
+column_name,nulls,rows
+credit_score,1159272,1202267
+offered_amount,1159272,1202267
+offer_id,1051413,1202267
+activity,0,1202267
+application_id,0,1202267
+actor,0,1202267
+event_ts,0,1202267
+lifecycle,0,1202267
+loan_purpose,0,1202267
+requested_amount,0,1202267

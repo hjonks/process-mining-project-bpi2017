@@ -1,0 +1,12 @@
+event_origin,lifecycle,action,events
+Workflow,suspend,Released,215402
+Application,complete,statechange,208086
+Offer,complete,statechange,150854
+Workflow,schedule,Created,149104
+Workflow,start,Obtained,128227
+Workflow,resume,Obtained,127160
+Workflow,ate_abort,Deleted,85224
+Offer,complete,Created,42995
+Workflow,complete,Deleted,41862
+Application,complete,Created,31509
+Workflow,withdraw,Deleted,21844

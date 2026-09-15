@@ -1,0 +1,10 @@
+activity,occurrences,cases
+W_Validate application,209496,21870
+W_Call incomplete files,168529,15003
+W_Complete application,148900,31509
+A_Validating,38816,21870
+A_Accepted,31509,31509
+A_Complete,31362,31362
+A_Incomplete,23055,15003
+A_Submitted,20423,20423
+O_Accepted,17228,17228

@@ -1,0 +1,11 @@
+activity,occurrences,mean_wait_hours,median_wait_hours,total_wait_days,bottleneck_score
+W_Call after offers,191091,30.1,0.0,239868.0,5756824.0
+A_Cancelled,10431,496.2,639.8,215677.0,5176253.0
+W_Call incomplete files,168522,8.8,0.0,62002.0,1488059.0
+W_Validate application,209496,5.9,0.0,51728.0,1241461.0
+W_Complete application,148900,6.0,0.0,37243.0,893832.0
+O_Accepted,17228,47.9,2.9,34371.0,824907.0
+O_Create Offer,42995,15.3,0.1,27442.0,658597.0
+A_Accepted,31509,7.9,0.1,10345.0,248288.0
+A_Denied,3753,24.5,0.7,3824.0,91784.0
+O_Returned,23305,2.7,0.0,2601.0,62432.0

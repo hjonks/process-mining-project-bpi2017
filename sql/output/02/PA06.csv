@@ -1,0 +1,16 @@
+activity,total_events,cases_touched,avg_repeats_per_case,max_repeats_one_case
+W_Call incomplete files,168529,15003,11.23,100
+W_Personal Loan collection,22,2,11.0,12
+W_Assess potential fraud,3282,303,10.83,60
+W_Validate application,209496,21870,9.58,67
+W_Call after offers,191092,31362,6.09,64
+W_Complete application,148900,31509,4.73,123
+W_Shortened completion ,238,74,3.22,7
+W_Handle leads,47264,20423,2.31,47
+A_Validating,38816,21870,1.77,8
+A_Incomplete,23055,15003,1.54,7
+O_Created,42995,31509,1.36,10
+O_Create Offer,42995,31509,1.36,10
+O_Cancelled,20898,15682,1.33,10
+O_Sent (mail and online),39707,31050,1.28,10
+O_Refused,4695,3720,1.26,8

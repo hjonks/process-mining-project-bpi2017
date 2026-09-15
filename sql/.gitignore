@@ -1,0 +1,5 @@
+# Large local files created by the pipeline
+*.xes.gz
+event_log_raw.csv
+*.duckdb
+*.duckdb.wal

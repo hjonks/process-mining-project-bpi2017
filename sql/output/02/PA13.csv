@@ -1,0 +1,4 @@
+is_top3_variant,is_top10_variant,cases,mean_days,pct_breaching
+False,False,26679,21.0,61.0
+True,True,2811,29.3,91.1
+False,True,2019,23.6,67.1

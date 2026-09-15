@@ -1,0 +1,9 @@
+transition,within_same_task,occurrences,mean_wait_hours,total_wait_days
+suspend to resume,True,27632,92.4,106432.0
+suspend to ate_abort,True,21074,115.6,101490.0
+schedule to withdraw,True,2010,148.7,12457.0
+complete to ate_abort,False,10008,29.3,12201.0
+complete to resume,False,1478,79.4,4890.0
+complete to withdraw,False,1166,38.2,1854.0
+schedule to start,True,31423,0.1,183.0
+complete to suspend,False,31090,0.1,178.0
